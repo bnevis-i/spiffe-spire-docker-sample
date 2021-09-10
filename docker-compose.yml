@@ -1,0 +1,112 @@
+version: '3.7'
+
+networks:
+  edgex-network:
+    driver: bridge
+
+volumes:
+  spiffe_server: {}
+  spiffe_agent: {}
+
+services:
+
+  spiffe-server:
+    image: spiffe-server:latest
+    hostname: spiffe-server
+    container_name: spiffe-server
+    restart: on-failure
+    build:
+      context: server
+    volumes:
+      - spiffe_server:/srv/spiffe/server:z
+      - /tmp/edgex/secrets/spiffe:/tmp/edgex/secrets/spiffe:z
+    networks:
+      edgex-network: {}
+    read_only: false # fixme later
+    security_opt: 
+      - "no-new-privileges:true"
+    expose:
+      - "8081"
+    ports:
+      - "127.0.0.1:8081:8081"
+  
+  spiffe-config:
+    image: spiffe-config:latest
+    hostname: spiffe-config
+    container_name: spiffe-config
+    restart: on-failure
+    build:
+      context: config
+    volumes:
+      - spiffe_server:/srv/spiffe/server:z
+      - /tmp/edgex/secrets/spiffe:/tmp/edgex/secrets/spiffe:z
+    networks:
+      edgex-network: {}
+    read_only: false # fixme later
+    security_opt: 
+      - "no-new-privileges:true"
+    depends_on:
+      - spiffe-server
+  
+  spiffe-agent:
+    image: spiffe-agent:latest
+    hostname: spiffe-agent
+    container_name: spiffe-agent
+    restart: on-failure
+    build:
+      context: agent
+    volumes:
+      - spiffe_agent:/srv/spiffe/agent:z
+      - /tmp/edgex/secrets/spiffe:/tmp/edgex/secrets/spiffe:z
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      edgex-network: {}
+    read_only: false # fixme later
+    tmpfs:
+      - /tmp
+    privileged: true
+    pid: host
+    security_opt: 
+      - "no-new-privileges:true"
+    depends_on:
+      - spiffe-config
+
+  spiffe-service1:
+    image: spiffe-service1:latest
+    hostname: spiffe-service1
+    container_name: spiffe-service1
+    restart: on-failure
+    build:
+      context: service1
+    volumes:
+      - /tmp/edgex/secrets/spiffe:/tmp/edgex/secrets/spiffe:z
+    networks:
+      edgex-network: {}
+    read_only: false # fixme later
+    ports:
+      - "127.0.0.1:8123:443"
+    tmpfs:
+      - /tmp
+    security_opt: 
+      - "no-new-privileges:true"
+    depends_on:
+      - spiffe-agent
+
+  spiffe-service2:
+    image: spiffe-service2:latest
+    hostname: spiffe-service2
+    container_name: spiffe-service2
+    restart: on-failure
+    build:
+      context: service2
+    volumes:
+      - /tmp/edgex/secrets/spiffe:/tmp/edgex/secrets/spiffe:z
+    networks:
+      edgex-network: {}
+    read_only: false # fixme later
+    tmpfs:
+      - /tmp
+    security_opt: 
+      - "no-new-privileges:true"
+    depends_on:
+      - spiffe-service1

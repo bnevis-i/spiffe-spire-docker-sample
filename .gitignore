@@ -1,0 +1,4 @@
+server/spire-server
+config/spire-server
+agent/spire-agent
+spire-*

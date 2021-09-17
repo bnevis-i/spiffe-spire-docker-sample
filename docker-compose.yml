@@ -17,6 +17,8 @@ services:
     restart: on-failure
     build:
       context: server
+    tmpfs:
+      - /run
     volumes:
       - spiffe_server:/srv/spiffe/server:z
       - /tmp/edgex/secrets/spiffe:/tmp/edgex/secrets/spiffe:z

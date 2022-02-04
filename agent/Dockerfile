@@ -1,5 +1,5 @@
 #  ----------------------------------------------------------------------------------
-#  Copyright 2021 Intel Corporation
+#  Copyright 2022 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -18,14 +18,16 @@
 FROM debian:stable-slim
 
 LABEL license='SPDX-License-Identifier: Apache-2.0' \
-      copyright='Copyright (c) 2021: Intel Corporation'
+      copyright='Copyright (c) 2022: Intel Corporation'
 
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get update -y && apt-get upgrade -y && apt-get install -y --no-install-recommends dumb-init && apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN apt-get update -y && apt-get upgrade -y && apt-get install -y --no-install-recommends dumb-init openssl && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 COPY spire-agent /usr/local/bin
+COPY spire-server /usr/local/bin
 COPY docker-entrypoint.sh /usr/local/bin/
-COPY agent.conf /usr/local/etc/spire/
+COPY agent.conf /usr/local/etc/spire/agent.conf.tpl
+COPY openssl.conf /usr/local/etc/
 
 ENTRYPOINT [ "/usr/bin/dumb-init" ]
 CMD [ "--verbose", "docker-entrypoint.sh" ]

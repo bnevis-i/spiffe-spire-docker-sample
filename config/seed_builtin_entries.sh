@@ -1,9 +1,11 @@
 #!/bin/sh -x
 
 local_agent_svid=$1
-reg_sock="/tmp/edgex/secrets/spiffe/run/registration.sock"
-svid_service_base="spiffe://edgexfoundry.org/service"
 
-/usr/local/bin/spire-server entry create -registrationUDSPath "${reg_sock}" -parentID "${local_agent_svid}" -dns spiffe-agent -spiffeID "${svid_service_base}/spiffe-agent" -selector "docker:label:com.docker.compose.service:spiffe-agent"
-/usr/local/bin/spire-server entry create -registrationUDSPath "${reg_sock}" -parentID "${local_agent_svid}" -dns spiffe-service1 -spiffeID "${svid_service_base}/spiffe-service1" -selector "docker:label:com.docker.compose.service:spiffe-service1"
-/usr/local/bin/spire-server entry create -registrationUDSPath "${reg_sock}" -parentID "${local_agent_svid}" -dns spiffe-service2 -spiffeID "${svid_service_base}/spiffe-service2" -selector "docker:label:com.docker.compose.service:spiffe-service2"
+echo "local_agent_svid=${local_agent_svid}"
+echo "SPIFFE_SERVER_SOCKET=${SPIFFE_SERVER_SOCKET}"
+echo "SPIFFE_EDGEX_SVID_BASE=${SPIFFE_EDGEX_SVID_BASE}"
+
+#spire-server entry create -socketPath "${SPIFFE_SERVER_SOCKET}" -parentID "${local_agent_svid}" -dns spiffe-agent -spiffeID "${SPIFFE_EDGEX_SVID_BASE}/spiffe-agent" -selector "docker:label:com.docker.compose.service:spiffe-agent"
+spire-server entry create -socketPath "${SPIFFE_SERVER_SOCKET}" -parentID "${local_agent_svid}" -dns spiffe-service1 -spiffeID "${SPIFFE_EDGEX_SVID_BASE}/spiffe-service1" -selector "docker:label:com.docker.compose.service:spiffe-service1"
+spire-server entry create -socketPath "${SPIFFE_SERVER_SOCKET}" -parentID "${local_agent_svid}" -dns spiffe-service2 -spiffeID "${SPIFFE_EDGEX_SVID_BASE}/spiffe-service2" -selector "docker:label:com.docker.compose.service:spiffe-service2"

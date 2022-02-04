@@ -2,22 +2,17 @@
 
 umask 027
 
-while test ! -f /srv/spiffe/server/data/journal.pem; do
-  echo Waiting for database to initialize
-  sleep 1
-done
+export SPIFFE_SERVER_SOCKET
+export SPIFFE_EDGEX_SVID_BASE
+export SPIFFE_TRUST_DOMAIN
 
-mkdir -p /tmp/edgex/secrets/spiffe/trust /tmp/edgex/secrets/spiffe/agent0
-spire-server bundle show -socketPath /tmp/edgex/secrets/spiffe/run/registration.sock > /tmp/edgex/secrets/spiffe/trust/bundle
-if [ $? -eq 0 ]; then
-    echo INFO: Exported trust bundle
-fi
+: ${SPIFFE_SERVER_SOCKET:=/tmp/edgex/secrets/spiffe/private/api.sock}
+: ${SPIFFE_EDGEX_SVID_BASE:=spiffe://edgexfoundry.org/service}
+: ${SPIFFE_TRUST_DOMAIN:=edgexfoundry.org}
 
-if test ! -s /tmp/edgex/secrets/spiffe/agent0/join-token; then
-    spire-server token generate -socketPath /tmp/edgex/secrets/spiffe/run/registration.sock | head -q -n 1 | awk '{ print $2; }' > /tmp/edgex/secrets/spiffe/agent0/join-token
-    if [ $? -eq 0 ]; then
-        echo INFO: Exported join token
-    fi
-fi
+: ${SPIFFE_AGENT0_CN:=agent0}
+: ${SPIFFE_PARENTID:=spiffe://${SPIFFE_TRUST_DOMAIN}/spire/agent/x509pop/cn/${SPIFFE_AGENT0_CN}}
 
-/usr/local/etc/spiffe-scripts.d/seed_builtin_entries.sh "spiffe://edgexfoundry.org/spire/agent/join_token/`cat /tmp/edgex/secrets/spiffe/agent0/join-token`"
+/usr/local/etc/spiffe-scripts.d/seed_builtin_entries.sh "${SPIFFE_PARENTID}"
+
+exec tail -f /dev/null

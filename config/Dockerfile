@@ -1,5 +1,5 @@
 #  ----------------------------------------------------------------------------------
-#  Copyright 2021 Intel Corporation
+#  Copyright 2022 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
 FROM debian:stable-slim
 
 LABEL license='SPDX-License-Identifier: Apache-2.0' \
-      copyright='Copyright (c) 2021: Intel Corporation'
+      copyright='Copyright (c) 2022: Intel Corporation'
 
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update -y && apt-get upgrade -y && apt-get install -y --no-install-recommends dumb-init && apt-get clean && rm -rf /var/lib/apt/lists/*

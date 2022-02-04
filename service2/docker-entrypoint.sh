@@ -2,12 +2,14 @@
 
 umask 027
 
-while ! spire-agent api fetch x509 -socketPath /tmp/edgex/secrets/spiffe/run/agent.sock -write /tmp; do
+: ${SPIFFE_ENDPOINT_SOCKET:=/tmp/edgex/secrets/spiffe/public/api.sock}
+
+while ! spire-agent api fetch x509 -socketPath "${SPIFFE_ENDPOINT_SOCKET}" -write /tmp; do
   echo "Waiting for SVID"
   sleep 1
 done
 
-while ! spire-agent api fetch jwt -socketPath /tmp/edgex/secrets/spiffe/run/agent.sock -audience myinstall > /tmp/getjwt.txt; do
+while ! spire-agent api fetch jwt -socketPath "${SPIFFE_ENDPOINT_SOCKET}" -audience myinstall > /tmp/getjwt.txt; do
   echo "Waiting for SVID"
   sleep 1
 done

@@ -5,6 +5,7 @@ networks:
     driver: bridge
 
 volumes:
+  spiffe_ca: {}
   spiffe_server: {}
   spiffe_agent: {}
 
@@ -20,11 +21,13 @@ services:
     tmpfs:
       - /run
     volumes:
+      - spiffe_ca:/srv/spiffe/ca:z
       - spiffe_server:/srv/spiffe/server:z
       - /tmp/edgex/secrets/spiffe:/tmp/edgex/secrets/spiffe:z
     networks:
       edgex-network: {}
-    read_only: false # fixme later
+    read_only: true
+    pid: host
     security_opt: 
       - "no-new-privileges:true"
     expose:
@@ -32,6 +35,27 @@ services:
     ports:
       - "127.0.0.1:8081:8081"
   
+  spiffe-agent:
+    image: spiffe-agent:latest
+    hostname: spiffe-agent
+    container_name: spiffe-agent
+    restart: on-failure
+    build:
+      context: agent
+    tmpfs:
+      - /run
+    volumes:
+      - spiffe_ca:/srv/spiffe/ca:z
+      - spiffe_agent:/srv/spiffe/agent:z
+      - /tmp/edgex/secrets/spiffe:/tmp/edgex/secrets/spiffe:z
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      edgex-network: {}
+    read_only: true
+    pid: host
+    security_opt: 
+      - "no-new-privileges:true"
+
   spiffe-config:
     image: spiffe-config:latest
     hostname: spiffe-config
@@ -44,35 +68,13 @@ services:
       - /tmp/edgex/secrets/spiffe:/tmp/edgex/secrets/spiffe:z
     networks:
       edgex-network: {}
-    read_only: false # fixme later
-    security_opt: 
-      - "no-new-privileges:true"
-    depends_on:
-      - spiffe-server
-  
-  spiffe-agent:
-    image: spiffe-agent:latest
-    hostname: spiffe-agent
-    container_name: spiffe-agent
-    restart: on-failure
-    build:
-      context: agent
-    volumes:
-      - spiffe_agent:/srv/spiffe/agent:z
-      - /tmp/edgex/secrets/spiffe:/tmp/edgex/secrets/spiffe:z
-      - /var/run/docker.sock:/var/run/docker.sock
-    networks:
-      edgex-network: {}
-    read_only: false # fixme later
-    tmpfs:
-      - /tmp
-    privileged: true
+    read_only: true
     pid: host
     security_opt: 
       - "no-new-privileges:true"
     depends_on:
-      - spiffe-config
-
+      - spiffe-agent
+  
   spiffe-service1:
     image: spiffe-service1:latest
     hostname: spiffe-service1
@@ -93,6 +95,7 @@ services:
       - "no-new-privileges:true"
     depends_on:
       - spiffe-agent
+      - spiffe-config
 
   spiffe-service2:
     image: spiffe-service2:latest

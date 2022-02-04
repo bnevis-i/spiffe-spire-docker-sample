@@ -1,6 +1,6 @@
 all: server agent
 
-run: build
+run:
 	docker-compose up -d
 
 build: binaries
@@ -22,13 +22,10 @@ server: unzip server/spire-server
 
 config: unzip config/spire-server
 
-agent service1 service2: unzip agent/spire-agent service1/spire-agent service2/spire-agent
+agent service1 service2: unzip agent/spire-agent agent/spire-server service1/spire-agent service2/spire-agent
 
-server/spire-server:
-	cp spire-1.0.2/bin/spire-server $@
-
-config/spire-server:
-	cp spire-1.0.2/bin/spire-server $@
+agent/spire-server server/spire-server config/spire-server:
+	cp spire-1.2.0/bin/spire-server $@
 
 agent/spire-agent service1/spire-agent service2/spire-agent:
-	cp spire-1.0.2/bin/spire-agent $@
+	cp spire-1.2.0/bin/spire-agent $@

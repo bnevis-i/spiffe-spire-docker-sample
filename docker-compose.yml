@@ -64,7 +64,6 @@ services:
     build:
       context: config
     volumes:
-      - spiffe_server:/srv/spiffe/server:z
       - /tmp/edgex/secrets/spiffe:/tmp/edgex/secrets/spiffe:z
     networks:
       edgex-network: {}

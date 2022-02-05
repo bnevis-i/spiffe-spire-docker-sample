@@ -3,7 +3,6 @@
 umask 027
 
 # Set default env vars if unassigned
-: ${SPIFFE_CA_PATH:=/tmp/edgex/secrets/spiffe/ca/ca.crt}
 : ${SPIFFE_SERVER_SOCKET:=/tmp/edgex/secrets/spiffe/private/api.sock}
 : ${SPIFFE_ENDPOINT_SOCKET:=/tmp/edgex/secrets/spiffe/public/api.sock}
 : ${SPIFFE_TRUSTBUNDLE_PATH:=/tmp/edgex/secrets/spiffe/trust/bundle}
@@ -11,11 +10,10 @@ umask 027
 : ${SPIFFE_SERVER_HOST:=spiffe-server}
 : ${SPIFFE_SERVER_PORT:=8968}
 
-for dir in `dirname "${SPIFFE_CA_PATH}"` \
-         `dirname "${SPIFFE_SERVER_SOCKET}"` \
-         `dirname "${SPIFFE_ENDPOINT_SOCKET}"` \
-         /srv/spiffe/ca/public \
-         /srv/spiffe/ca/private ; do
+for dir in `dirname "${SPIFFE_SERVER_SOCKET}"` \
+           `dirname "${SPIFFE_ENDPOINT_SOCKET}"` \
+           /srv/spiffe/ca/public \
+           /srv/spiffe/ca/private ; do
     test -d "$dir" || mkdir -p "$dir"
 done
 
@@ -36,10 +34,6 @@ if test ! -f "/srv/spiffe/ca/public/agent-ca.crt"; then
     SAN="" openssl x509 -sha384 -signkey "/srv/spiffe/ca/private/agent-ca.key" -clrext -extfile /usr/local/etc/openssl.conf -extensions ca_ext -CAkey "/srv/spiffe/ca/private/agent-ca.key" -CAcreateserial -req -in "/run/ca.req.$$" -days 3650 -out "/srv/spiffe/ca/public/agent-ca.crt"
     rm -f "/run/ca.req.$$"
 fi
-
-# Install ca.crt into shared area
-
-cp -fp "/srv/spiffe/ca/public/ca.crt" "${SPIFFE_CA_PATH}"
 
 # Process server configuration template
 

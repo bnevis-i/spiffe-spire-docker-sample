@@ -4,7 +4,6 @@ umask 027
 
 # Set default env vars if unassigned
 
-: ${SPIFFE_CA_PATH:=/tmp/edgex/secrets/spiffe/ca/ca.crt}
 : ${SPIFFE_SERVER_SOCKET:=/tmp/edgex/secrets/spiffe/private/api.sock}
 : ${SPIFFE_ENDPOINT_SOCKET:=/tmp/edgex/secrets/spiffe/public/api.sock}
 : ${SPIFFE_TRUSTBUNDLE_PATH:=/tmp/edgex/secrets/spiffe/trust/bundle}
@@ -14,10 +13,9 @@ umask 027
 : ${SPIFFE_AGENT0_CN:=agent0}
 
 
-for dir in `dirname "${SPIFFE_CA_PATH}"` \
-         `dirname "${SPIFFE_SERVER_SOCKET}"` \
-         `dirname "${SPIFFE_TRUSTBUNDLE_PATH}"` \
-         `dirname "${SPIFFE_ENDPOINT_SOCKET}"` ; do
+for dir in `dirname "${SPIFFE_SERVER_SOCKET}"` \
+           `dirname "${SPIFFE_TRUSTBUNDLE_PATH}"` \
+           `dirname "${SPIFFE_ENDPOINT_SOCKET}"` ; do
     test -d "$dir" || mkdir -p "$dir"
 done
 
@@ -37,6 +35,12 @@ spire-server bundle show -socketPath "${SPIFFE_SERVER_SOCKET}" > "${SPIFFE_TRUST
 if [ $? -eq 0 ]; then
     echo INFO: Exported trust bundle
 fi
+
+# Make the public stuff public
+
+chmod 644 "${SPIFFE_TRUSTBUNDLE_PATH}"
+chmod 755 `dirname "${SPIFFE_TRUSTBUNDLE_PATH}"`
+chmod 755 `dirname "${SPIFFE_ENDPOINT_SOCKET}"`
 
 # Process agent configuration template
 
